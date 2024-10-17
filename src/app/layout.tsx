@@ -1,17 +1,39 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
+import { Inter } from "next/font/google";
+import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
+import { ThemeProvider } from "@/components/theme-provider";
+import Header from "@/components/header";
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
+// const geistSans = localFont({
+//   src: "./fonts/GeistVF.woff",
+//   variable: "--font-geist-sans",
+//   weight: "100 900",
+// });
+// const geistMono = localFont({
+//   src: "./fonts/GeistMonoVF.woff",
+//   variable: "--font-geist-mono",
+//   weight: "100 900",
+// });
+
+const inter = Inter({
+  subsets: ["vietnamese"],
 });
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
+
+// const myFont = localFont({
+//   src: [
+//     {
+//       path: "./fonts/Roboto-Thin.ttf",
+//       weight: "100",
+//     },
+//     {
+//       path: "./fonts/Roboto-Regular.ttf",
+//       weight: "400",
+//     },
+//   ],
+//   display: "swap",
+//   variable: "--font-roboto",
+// });
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -24,11 +46,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${inter.className}`}>
+        <Toaster />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Header />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );
