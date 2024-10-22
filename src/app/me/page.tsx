@@ -1,4 +1,5 @@
-import envConfig from "@/config";
+import accountApiRequest from "@/apiRequest/account";
+import Profile from "@/app/me/profile";
 import { cookies } from "next/headers";
 
 const MeProfile = async () => {
@@ -6,32 +7,15 @@ const MeProfile = async () => {
   const sessionToken = cookieStore.get("sessionToken");
   console.log(sessionToken);
 
-  const result = await fetch(
-    `${envConfig.NEXT_PUBLIC_API_ENDPOINT}/account/me`,
-    {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${sessionToken?.value}`,
-      },
-    }
-  ).then(async (res) => {
-    const payload = await res.json();
-    console.log(payload);
+  const result = await accountApiRequest.me(sessionToken?.value ?? "");
 
-    const data = {
-      status: res.status,
-      payload,
-    };
-
-    if (!res.ok) {
-      throw data;
-    }
-
-    return data;
-  });
-  console.log(result);
-
-  return <>ok</>;
+  return (
+    <>
+      <h1>Me Profile</h1>
+      <div>Xin chào {result.payload.data.name}</div>
+      <Profile />
+    </>
+  );
 };
 
 export default MeProfile;

@@ -1,5 +1,6 @@
 "use client";
 
+import authApiRequest from "@/apiRequest/auth";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -10,15 +11,21 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import envConfig from "@/config";
+import { useToast } from "@/hooks/use-toast";
+import { handleErrorApi } from "@/lib/utils";
 import {
   RegisterBody,
   RegisterBodyType,
 } from "@/schemaValidations/auth.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 
 const RegisterForm = () => {
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+  const router = useRouter();
   const form = useForm<RegisterBodyType>({
     resolver: zodResolver(RegisterBody),
     defaultValues: {
@@ -33,18 +40,25 @@ const RegisterForm = () => {
   async function onSubmit(values: RegisterBodyType) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
-    const result = await fetch(
-      `${envConfig.NEXT_PUBLIC_API_ENDPOINT}/auth/register`,
-      {
-        body: JSON.stringify(values),
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    ).then((res) => res.json());
+    if (loading) return;
+    setLoading(true);
+    try {
+      const result = await authApiRequest.register(values);
+      toast({
+        description: result.payload.message,
+      });
 
-    console.log(result);
+      await authApiRequest.auth({ sessionToken: result.payload.data.token });
+
+      router.push("/me");
+    } catch (error: any) {
+      handleErrorApi({
+        error,
+        setError: form.setError,
+      });
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (

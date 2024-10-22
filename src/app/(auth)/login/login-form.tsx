@@ -1,5 +1,6 @@
 "use client";
 
+import authApiRequest from "@/apiRequest/auth";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -10,14 +11,18 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import envConfig from "@/config";
+import { useToast } from "@/hooks/use-toast";
+import { handleErrorApi } from "@/lib/utils";
 import { LoginBody, LoginBodyType } from "@/schemaValidations/auth.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useToast } from "@/hooks/use-toast";
 
 const LoginForm = () => {
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
   const form = useForm<LoginBodyType>({
     resolver: zodResolver(LoginBody),
     defaultValues: {
@@ -28,78 +33,26 @@ const LoginForm = () => {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async function onSubmit(values: LoginBodyType) {
+    if (loading) return;
+    setLoading(true);
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
     try {
-      const result = await fetch(
-        `${envConfig.NEXT_PUBLIC_API_ENDPOINT}/auth/login`,
-        {
-          body: JSON.stringify(values),
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      ).then(async (res) => {
-        const payload = await res.json();
-
-        const data = {
-          status: res.status,
-          payload,
-        };
-
-        if (!res.ok) {
-          throw data;
-        }
-
-        return data;
-      });
+      const result = await authApiRequest.login(values);
       toast({
         description: result.payload.message,
       });
 
-      const resultFromNextServer = await fetch("/api/auth", {
-        method: "POST",
-        body: JSON.stringify(result),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }).then(async (res) => {
-        const payload = await res.json();
+      await authApiRequest.auth({ sessionToken: result.payload.data.token });
 
-        const data = {
-          status: res.status,
-          payload,
-        };
-
-        if (!res.ok) {
-          throw data;
-        }
-
-        return data;
-      });
-      console.log(resultFromNextServer);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      router.push("/me");
     } catch (error: any) {
-      const errors = error.payload.errors as {
-        field: string;
-        message: string;
-      }[];
-      const status = error.status as number;
-      if (status === 422) {
-        errors.forEach((error) => {
-          form.setError(error.field as "email" | "password", {
-            type: "server",
-            message: error.message,
-          });
-        });
-      } else {
-        toast({
-          title: "Lỗi",
-          description: error.payload.message,
-          variant: "destructive",
-        });
-      }
+      handleErrorApi({
+        error,
+        setError: form.setError,
+      });
+    } finally {
+      setLoading(false);
     }
   }
 
