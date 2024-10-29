@@ -84,7 +84,7 @@ const request = async <Response>(
       ? options.body
       : JSON.stringify(options.body)
     : undefined;
-  const baseHeader =
+  const baseHeaders =
     body instanceof FormData
       ? {
           Authorization: clientSessionToken.value
@@ -114,7 +114,7 @@ const request = async <Response>(
   const res = await fetch(fullUrl, {
     ...options,
     headers: {
-      ...baseHeader,
+      ...baseHeaders,
       ...options?.headers,
     },
     body,
@@ -140,7 +140,7 @@ const request = async <Response>(
             method: "POST",
             body: JSON.stringify({ force: true }),
             headers: {
-              ...baseHeader,
+              ...baseHeaders,
             },
           });
           await clientLogoutRequest;

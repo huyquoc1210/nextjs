@@ -1,6 +1,7 @@
 "use client";
 
-import productApiRequest from "@/apiRequest/product";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -11,24 +12,23 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 import { handleErrorApi } from "@/lib/utils";
+import { useRef, useState } from "react";
 import {
   CreateProductBody,
   CreateProductBodyType,
 } from "@/schemaValidations/product.schema";
-import { zodResolver } from "@hookform/resolvers/zod";
+
+import { Textarea } from "@/components/ui/textarea";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { ChangeEvent, useEffect, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import productApiRequest from "@/apiRequest/product";
+import { useToast } from "@/hooks/use-toast";
 
 const ProductAddForm = () => {
-  const [loading, setLoading] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string>("");
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
   const form = useForm<CreateProductBodyType>({
@@ -40,55 +40,10 @@ const ProductAddForm = () => {
       image: "",
     },
   });
-
-  // Cleanup preview URL when component unmounts
-  useEffect(() => {
-    return () => {
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-      }
-    };
-  }, [previewUrl]);
-
-  const handleDeleteImage = () => {
-    // Xóa file và preview
-    setFile(null);
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-      setPreviewUrl("");
-    }
-
-    // Reset form value
-    form.setValue("image", "");
-
-    // Reset input file
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
-
-  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const newFile = e.target.files?.[0];
-
-    // Cleanup old preview URL if exists
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-    }
-
-    if (newFile) {
-      const newPreviewUrl = URL.createObjectURL(newFile);
-      setFile(newFile);
-      setPreviewUrl(newPreviewUrl);
-      form.setValue("image", `http://localhost:3000/${newFile.name}`);
-    }
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // 2. Define a submit handler.
   async function onSubmit(values: CreateProductBodyType) {
     if (loading) return;
     setLoading(true);
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
     try {
       const formData = new FormData();
       formData.append("file", file as Blob);
@@ -102,7 +57,6 @@ const ProductAddForm = () => {
       toast({
         description: result.payload.message,
       });
-
       router.push("/products");
     } catch (error: any) {
       handleErrorApi({
@@ -113,14 +67,14 @@ const ProductAddForm = () => {
       setLoading(false);
     }
   }
-
   return (
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit, (error) => {
           console.log(error);
+          console.log(form.getValues("image"));
         })}
-        className="space-y-2 max-w-[600px] w-full flex-shrink-0"
+        className="space-y-2 max-w-[600px] flex-shrink-0 w-full"
         noValidate
       >
         <FormField
@@ -128,7 +82,7 @@ const ProductAddForm = () => {
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Name</FormLabel>
+              <FormLabel>Tên</FormLabel>
               <FormControl>
                 <Input placeholder="tên" type="text" {...field} />
               </FormControl>
@@ -141,9 +95,9 @@ const ProductAddForm = () => {
           name="price"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Giá cả</FormLabel>
+              <FormLabel>Giá</FormLabel>
               <FormControl>
-                <Input placeholder="Giá" type="number" {...field} />
+                <Input placeholder="giá" type="number" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -154,9 +108,9 @@ const ProductAddForm = () => {
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Mô tả sản phẩm</FormLabel>
+              <FormLabel>Mô tả</FormLabel>
               <FormControl>
-                <Textarea placeholder="Mô tả về sản phẩm" {...field} />
+                <Textarea placeholder="mô tả" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -165,7 +119,6 @@ const ProductAddForm = () => {
         <FormField
           control={form.control}
           name="image"
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           render={({ field }) => (
             <FormItem>
               <FormLabel>Hình ảnh</FormLabel>
@@ -173,15 +126,14 @@ const ProductAddForm = () => {
                 <Input
                   type="file"
                   accept="image/*"
-                  ref={fileInputRef}
-                  // onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                  //   const file = e.target.files?.[0];
-                  //   if (file) {
-                  //     setFile(file);
-                  //     field.onChange(`http://localhost:3000/${file.name}`);
-                  //   }
-                  // }}
-                  onChange={handleImageChange}
+                  ref={inputRef}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setFile(file);
+                      field.onChange("http://localhost:3000/" + file.name);
+                    }
+                  }}
                 />
               </FormControl>
               <FormMessage />
@@ -189,27 +141,32 @@ const ProductAddForm = () => {
           )}
         />
         {file && (
-          <>
+          <div>
             <Image
               src={URL.createObjectURL(file)}
               width={128}
               height={128}
-              alt="Picture Preview"
+              alt="preview"
               className="w-32 h-32 object-cover"
             />
             <Button
               type="button"
-              variant="destructive"
-              size="sm"
-              onClick={handleDeleteImage}
+              variant={"destructive"}
+              size={"sm"}
+              onClick={() => {
+                setFile(null);
+                form.setValue("image", "");
+                if (inputRef.current) {
+                  inputRef.current.value = "";
+                }
+              }}
             >
-              Xoá
+              Xóa hình ảnh
             </Button>
-          </>
+          </div>
         )}
-
         <Button type="submit" className="!mt-8 w-full">
-          Thêm sản phẩm
+          Thên sản phẩm
         </Button>
       </form>
     </Form>
