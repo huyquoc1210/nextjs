@@ -1,5 +1,6 @@
 import envConfig from "@/config";
 import { LoginResType } from "@/schemaValidations/auth.schema";
+import { redirect } from "next/navigation";
 import { normalize } from "path";
 
 type CustomOptions = Omit<RequestInit, "method"> & {
@@ -7,6 +8,7 @@ type CustomOptions = Omit<RequestInit, "method"> & {
 };
 
 const ENTITY_ERROR_STATUS = 422;
+const AUTHENTICATION_ERROR_STATUS = 401;
 
 type EntityErrorPayload = {
   message: string;
@@ -19,7 +21,7 @@ type EntityErrorPayload = {
 export class HttpError extends Error {
   status: number;
   payload: {
-    message: string;
+    message?: string;
     [key: string]: any;
   };
   constructor({ status, payload }: { status: number; payload: any }) {
@@ -59,6 +61,7 @@ class SessionToken {
 }
 
 export const clientSessionToken = new SessionToken();
+let clientLogoutRequest: null | Promise<any> = null;
 
 const request = async <Response>(
   method: "GET" | "POST" | "POST" | "PUT" | "DELETE",
@@ -108,6 +111,27 @@ const request = async <Response>(
           payload: EntityErrorPayload;
         }
       );
+    } else if (res.status === AUTHENTICATION_ERROR_STATUS) {
+      if (typeof window !== "undefined") {
+        if (!clientLogoutRequest) {
+          clientLogoutRequest = fetch("api/auth/logout", {
+            method: "POST",
+            body: JSON.stringify({ force: true }),
+            headers: {
+              ...baseHeader,
+            },
+          });
+          await clientLogoutRequest;
+          clientSessionToken.value = "";
+          // console.log("đã đăng xuất");
+          location.href = "/login";
+        }
+      } else {
+        const sessionToken = (options?.headers as any)?.Authorization.split(
+          "Bearer "
+        )[1];
+        redirect(`/logout?sessionToken=${sessionToken}`);
+      }
     } else {
       throw new HttpError(data);
     }
