@@ -1,4 +1,4 @@
-import AppContext from "@/app/AppProvider";
+import AppContext from "@/app/app-provider";
 
 import { useContext } from "react";
 
