@@ -9,6 +9,9 @@ const Header = () => {
     <>
       <ul>
         <li>
+          <Link href={"/products/add"}>Products</Link>
+        </li>
+        <li>
           <Link href={"/login"}>Đăng nhập</Link>
         </li>
         <li>
