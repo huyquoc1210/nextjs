@@ -49,6 +49,7 @@ export class EntityError extends HttpError {
 
 class SessionToken {
   private token = "";
+  private _expiresAt = new Date().toISOString();
   get value() {
     return this.token;
   }
@@ -57,6 +58,16 @@ class SessionToken {
       throw new Error("Can set token on server side");
     }
     this.token = token;
+  }
+
+  get expiresAt() {
+    return this._expiresAt;
+  }
+  set expiresAt(expiresAt: string) {
+    if (typeof window === "undefined") {
+      throw new Error("Can set token on server side");
+    }
+    this._expiresAt = expiresAt;
   }
 }
 
@@ -123,6 +134,7 @@ const request = async <Response>(
           });
           await clientLogoutRequest;
           clientSessionToken.value = "";
+          clientSessionToken.expiresAt = new Date().toISOString();
           // console.log("đã đăng xuất");
           location.href = "/login";
         }
@@ -142,8 +154,10 @@ const request = async <Response>(
       ["/auth/login", "/auth/register"].some((item) => item === normalize(url))
     ) {
       clientSessionToken.value = (payload as LoginResType).data.token;
+      clientSessionToken.expiresAt = (payload as LoginResType).data.expiresAt;
     } else if ("/auth/logout" === normalize(url)) {
       clientSessionToken.value = "";
+      clientSessionToken.expiresAt = new Date().toISOString();
     }
   }
 

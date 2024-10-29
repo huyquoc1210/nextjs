@@ -39,11 +39,14 @@ const LoginForm = () => {
     // ✅ This will be type-safe and validated.
     try {
       const result = await authApiRequest.login(values);
+
+      await authApiRequest.auth({
+        sessionToken: result.payload.data.token,
+        expiresAt: result.payload.data.expiresAt,
+      });
       toast({
         description: result.payload.message,
       });
-
-      await authApiRequest.auth({ sessionToken: result.payload.data.token });
 
       router.push("/me");
     } catch (error: any) {

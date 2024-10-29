@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { cookies } from "next/headers";
 import "./globals.css";
+import SlideSession from "@/components/slide-session";
 
 // const geistSans = localFont({
 //   src: "./fonts/GeistVF.woff",
@@ -59,9 +60,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <Header />
           <AppProvider initialSessionToken={sessionToken?.value}>
-            <Header />
             {children}
+            <SlideSession />
           </AppProvider>
         </ThemeProvider>
       </body>
