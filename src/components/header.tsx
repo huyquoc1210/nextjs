@@ -1,25 +1,14 @@
-import accountApiRequest from "@/apiRequest/account";
 import ButtonLogout from "@/components/button-logout";
 import { ModeToggle } from "@/components/mode-toggle";
-import { cookies } from "next/headers";
-
+import { AccountResType } from "@/schemaValidations/account.schema";
 import Link from "next/link";
 
-const Header = async () => {
-  const cookieStore = await cookies();
-  const sessionToken = cookieStore.get("sessionToken")?.value;
-  console.log(sessionToken);
-  let user = null;
+interface HeaderProps {
+  user: AccountResType["data"] | null;
+}
 
-  try {
-    if (sessionToken) {
-      const data = await accountApiRequest.me(sessionToken);
-      user = data.payload.data;
-      console.log(user);
-    }
-  } catch (error) {
-    console.log(error);
-  }
+const Header = (props: HeaderProps) => {
+  const { user } = props;
 
   return (
     <>
