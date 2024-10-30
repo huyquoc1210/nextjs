@@ -1,19 +1,35 @@
 import productApiRequest from "@/apiRequest/product";
+import type { Metadata } from "next";
 import Image from "next/image";
+import { cache } from "react";
 
-const ProductDetail = async ({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) => {
+type Props = {
+  params: { id: string };
+};
+
+const getDetail = cache(productApiRequest.getDetail);
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  // read route params
+  const id = params.id;
+  const { payload } = await getDetail(Number(id));
+
+  // fetch data
+  const product = payload.data;
+
+  return {
+    title: product.name,
+  };
+}
+
+const ProductDetail = async ({ params }: Props) => {
   let product = null;
   try {
-    const id = (await params).id;
+    const id = params.id;
     // console.log(id);
-    const { payload } = await productApiRequest.getDetail(Number(id));
-    // Nếu không có d
+    const { payload } = await getDetail(Number(id));
+
     product = payload.data;
-    console.log(product);
   } catch (error) {
     console.log(error);
   }

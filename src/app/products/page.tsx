@@ -1,9 +1,15 @@
 import productApiRequest from "@/apiRequest/product";
 import DeleteProduct from "@/app/products/_components/product-delete";
 import { Button } from "@/components/ui/button";
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Danh sách sản phẩm",
+  description: "Danh sách sản phẩm của web bán hàng ,được tạo bởi Huy Dev",
+};
 
 const ProductListPage = async () => {
   const cookieStore = cookies();
@@ -42,7 +48,7 @@ const ProductListPage = async () => {
               <div>{description}</div>
               {isAuthenticated && (
                 <div className="flex space-x-2 items-start">
-                  <Link href={`/products/${id}edit/`}>
+                  <Link href={`/products/${id}/edit`}>
                     <Button value={"outline"}>Edit</Button>
                   </Link>
                   <DeleteProduct product={item} />

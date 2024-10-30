@@ -59,11 +59,12 @@ const ProductAddForm = (props: { product?: ProductAddFormProps }) => {
         ...values,
         image: imageUrl,
       });
-      router.push("/products");
-      router.refresh();
+
       toast({
         description: result.payload.message,
       });
+      router.push("/products");
+      router.refresh();
     } catch (error: any) {
       handleErrorApi({
         error,
@@ -94,6 +95,7 @@ const ProductAddForm = (props: { product?: ProductAddFormProps }) => {
       toast({
         description: result.payload.message,
       });
+      router.refresh();
     } catch (error: any) {
       handleErrorApi({
         error,
