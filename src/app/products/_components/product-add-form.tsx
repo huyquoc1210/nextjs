@@ -25,6 +25,7 @@ import productApiRequest from "@/apiRequest/product";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 type ProductAddFormProps = ProductResType["data"];
 
@@ -34,7 +35,7 @@ const ProductAddForm = (props: { product?: ProductAddFormProps }) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-
+  const router = useRouter();
   const form = useForm<CreateProductBodyType>({
     resolver: zodResolver(CreateProductBody),
     defaultValues: {
@@ -58,7 +59,8 @@ const ProductAddForm = (props: { product?: ProductAddFormProps }) => {
         ...values,
         image: imageUrl,
       });
-
+      router.push("/products");
+      router.refresh();
       toast({
         description: result.payload.message,
       });
