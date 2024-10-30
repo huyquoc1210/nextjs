@@ -1,14 +1,11 @@
 "use client";
 
 import authApiRequest from "@/apiRequest/auth";
-import { useAppContext } from "@/app/app-provider";
 import { Button } from "@/components/ui/button";
 import { handleErrorApi } from "@/lib/utils";
 import { usePathname, useRouter } from "next/navigation";
 
 const ButtonLogout = () => {
-  const { user } = useAppContext();
-  console.log(user);
   const router = useRouter();
   const pathname = usePathname();
 

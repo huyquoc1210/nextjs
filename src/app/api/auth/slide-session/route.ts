@@ -7,7 +7,7 @@ export async function POST(request: Request) {
   const cookieStore = cookies();
   const sessionToken = cookieStore.get("sessionToken");
 
-  if (!sessionToken) {
+  if (!sessionToken.value) {
     return Response.json(
       { message: "Không nhận được session token" },
       {
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
       sessionToken.value
     );
     const newExpiresDate = new Date(res.payload.data.expiresAt).toUTCString();
-    console.log(newExpiresDate);
+
     return Response.json(res.payload, {
       status: 200,
       headers: {

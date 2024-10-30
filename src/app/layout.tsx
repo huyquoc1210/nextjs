@@ -29,7 +29,7 @@ export default async function RootLayout({
   let user: AccountResType["data"] | null = null;
 
   try {
-    if (sessionToken) {
+    if (sessionToken.value) {
       const data = await accountApiRequest.me(sessionToken.value);
       user = data.payload.data;
     }

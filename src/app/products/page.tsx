@@ -28,19 +28,21 @@ const ProductListPage = async () => {
           console.log(id);
           return (
             <div key={id} className="flex space-x-4">
-              <Image
-                src={image}
-                alt={name}
-                width={180}
-                height={180}
-                className="w-32 h-32 object-cover"
-              />
+              <Link href={`/products/${id}`}>
+                <Image
+                  src={image}
+                  alt={name}
+                  width={180}
+                  height={180}
+                  className="w-32 h-32 object-cover"
+                />
+              </Link>
               <h3>{name}</h3>
               <div>{price}</div>
               <div>{description}</div>
               {isAuthenticated && (
                 <div className="flex space-x-2 items-start">
-                  <Link href={`/products/${id}`}>
+                  <Link href={`/products/${id}edit/`}>
                     <Button value={"outline"}>Edit</Button>
                   </Link>
                   <DeleteProduct product={item} />
