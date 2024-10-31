@@ -13,9 +13,9 @@ export const metadata: Metadata = {
 
 const ProductListPage = async () => {
   const cookieStore = cookies();
-  const sessionToken = cookieStore.get("sessionToken");
+  const sessionToken = cookieStore.get("sessionToken")?.value;
 
-  const isAuthenticated = Boolean(sessionToken.value);
+  const isAuthenticated = Boolean(sessionToken);
 
   const { payload } = await productApiRequest.getList();
   const productList = payload.data;

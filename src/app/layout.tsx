@@ -9,6 +9,7 @@ import "./globals.css";
 import SlideSession from "@/components/slide-session";
 import accountApiRequest from "@/apiRequest/account";
 import { AccountResType } from "@/schemaValidations/account.schema";
+import { baseOpenGraph } from "@/app/shared-metadata";
 
 const inter = Inter({
   subsets: ["vietnamese"],
@@ -20,6 +21,7 @@ export const metadata: Metadata = {
     default: "Web bán hàng",
   },
   description: "Được tạo bởi Huy Dev",
+  openGraph: baseOpenGraph,
 };
 
 export default async function RootLayout({

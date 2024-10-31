@@ -1,4 +1,6 @@
 import productApiRequest from "@/apiRequest/product";
+import { baseOpenGraph } from "@/app/shared-metadata";
+import envConfig from "@/config";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { cache } from "react";
@@ -13,12 +15,26 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // read route params
   const id = params.id;
   const { payload } = await getDetail(Number(id));
+  const url = envConfig.NEXT_PUBLIC_URL + `/products/${id}`;
 
   // fetch data
   const product = payload.data;
 
   return {
+    ...baseOpenGraph,
     title: product.name,
+    description: product.description,
+    openGraph: {
+      title: product.name,
+      description: product.description,
+      url,
+      siteName: "Web bán hàng",
+      images: [
+        {
+          url: product.image, // Must be an absolute URL
+        },
+      ],
+    },
   };
 }
 
