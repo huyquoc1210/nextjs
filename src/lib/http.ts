@@ -58,7 +58,7 @@ const request = async <Response>(
   let body: FormData | string | undefined = undefined;
   if (options?.body instanceof FormData) {
     body = options.body;
-  } else {
+  } else if (options?.body) {
     body = JSON.stringify(options.body);
   }
 

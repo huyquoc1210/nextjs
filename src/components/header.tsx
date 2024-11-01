@@ -1,14 +1,12 @@
+"use client";
+
+import { useAppContext } from "@/app/app-provider";
 import ButtonLogout from "@/components/button-logout";
 import { ModeToggle } from "@/components/mode-toggle";
-import { AccountResType } from "@/schemaValidations/account.schema";
 import Link from "next/link";
 
-interface HeaderProps {
-  user: AccountResType["data"] | null;
-}
-
-const Header = (props: HeaderProps) => {
-  const { user } = props;
+const Header = () => {
+  const { user } = useAppContext();
 
   return (
     <>
@@ -16,10 +14,6 @@ const Header = (props: HeaderProps) => {
         <li>
           <Link href={"/products"}>Sản phẩm</Link>
         </li>
-        <li>
-          <ButtonLogout />
-        </li>
-
         {user ? (
           <>
             <li>

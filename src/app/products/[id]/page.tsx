@@ -35,6 +35,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         },
       ],
     },
+    alternates: {
+      canonical: url,
+    },
   };
 }
 
@@ -51,7 +54,7 @@ const ProductDetail = async ({ params }: Props) => {
   }
   return (
     <div>
-      Page
+      {!product && <div>Không tìm thấy sản phẩm</div>}
       {product && (
         <div>
           <Image

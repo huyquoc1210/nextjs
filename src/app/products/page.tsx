@@ -1,8 +1,7 @@
 import productApiRequest from "@/apiRequest/product";
-import DeleteProduct from "@/app/products/_components/product-delete";
-import { Button } from "@/components/ui/button";
+import ProductAddButton from "@/app/products/_components/product-add-button";
+import ProductEditButton from "@/app/products/_components/product-edit-button";
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -12,26 +11,17 @@ export const metadata: Metadata = {
 };
 
 const ProductListPage = async () => {
-  const cookieStore = cookies();
-  const sessionToken = cookieStore.get("sessionToken")?.value;
-
-  const isAuthenticated = Boolean(sessionToken);
-
   const { payload } = await productApiRequest.getList();
   const productList = payload.data;
 
   return (
     <div className="space-y-3">
       <h1>ProductList</h1>
-      {isAuthenticated && (
-        <Link href={"/products/add"}>
-          <Button variant={"secondary"}>Thêm sản phẩm</Button>
-        </Link>
-      )}
+      <ProductAddButton />
       <div className="space-y-5">
-        {productList.map((item) => {
-          const { name, price, description, image, id } = item;
-          console.log(id);
+        {productList.map((product) => {
+          const { name, price, description, image, id } = product;
+
           return (
             <div key={id} className="flex space-x-4">
               <Link href={`/products/${id}`}>
@@ -46,14 +36,7 @@ const ProductListPage = async () => {
               <h3>{name}</h3>
               <div>{price}</div>
               <div>{description}</div>
-              {isAuthenticated && (
-                <div className="flex space-x-2 items-start">
-                  <Link href={`/products/${id}/edit`}>
-                    <Button value={"outline"}>Edit</Button>
-                  </Link>
-                  <DeleteProduct product={item} />
-                </div>
-              )}
+              <ProductEditButton product={product} />
             </div>
           );
         })}

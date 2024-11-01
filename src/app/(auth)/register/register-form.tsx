@@ -1,6 +1,7 @@
 "use client";
 
 import authApiRequest from "@/apiRequest/auth";
+import { useAppContext } from "@/app/app-provider";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -24,6 +25,7 @@ import { useForm } from "react-hook-form";
 
 const RegisterForm = () => {
   const [loading, setLoading] = useState(false);
+  const { setUser } = useAppContext();
   const { toast } = useToast();
   const router = useRouter();
   const form = useForm<RegisterBodyType>({
@@ -52,7 +54,7 @@ const RegisterForm = () => {
       toast({
         description: result.payload.message,
       });
-
+      setUser(result.payload.data.account);
       router.push("/me");
     } catch (error: any) {
       handleErrorApi({
