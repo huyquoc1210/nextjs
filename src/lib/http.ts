@@ -47,56 +47,29 @@ export class EntityError extends HttpError {
   }
 }
 
-class SessionToken {
-  private token = "";
-  private _expiresAt = new Date().toISOString();
-  get value() {
-    return this.token;
-  }
-  set value(token: string) {
-    if (typeof window === "undefined") {
-      throw new Error("Can set token on server side");
-    }
-    this.token = token;
-  }
-
-  get expiresAt() {
-    return this._expiresAt;
-  }
-  set expiresAt(expiresAt: string) {
-    if (typeof window === "undefined") {
-      throw new Error("Can set token on server side");
-    }
-    this._expiresAt = expiresAt;
-  }
-}
-
-export const clientSessionToken = new SessionToken();
 let clientLogoutRequest: null | Promise<any> = null;
+export const isClient = () => typeof window !== "undefined";
 
 const request = async <Response>(
   method: "GET" | "POST" | "POST" | "PUT" | "DELETE",
   url: string,
   options?: CustomOptions | undefined
 ) => {
-  const body = options?.body
-    ? options.body instanceof FormData
-      ? options.body
-      : JSON.stringify(options.body)
-    : undefined;
-  const baseHeaders =
-    body instanceof FormData
-      ? {
-          Authorization: clientSessionToken.value
-            ? `Bearer ${clientSessionToken.value}`
-            : "",
-        }
-      : {
-          "Content-Type": "application/json",
-          Authorization: clientSessionToken.value
-            ? `Bearer ${clientSessionToken.value}`
-            : "",
-        };
+  let body: FormData | string | undefined = undefined;
+  if (options?.body instanceof FormData) {
+    body = options.body;
+  } else {
+    body = JSON.stringify(options.body);
+  }
+
+  const baseHeaders: { [key: string]: string } =
+    body instanceof FormData ? {} : { "Content-Type": "application/json" };
+  if (isClient()) {
+    const sessionToken = localStorage.getItem("sessionToken");
+    if (sessionToken) {
+      baseHeaders.Authorization = `Bearer ${sessionToken}`;
+    }
+  }
 
   // Nếu không truyền baseUrl ( hoặc baseUrl = undefined) thì lấy từ envConfig.NEXT_PUBLIC_API_ENDPOINT
   // Nếu truyền baseUrl thì lấy giá trị truyền vào , truyền vào  '' thì đồng nghĩa với việc chúng với việc chúng ta gọi API đến Next.js Sever
@@ -134,7 +107,7 @@ const request = async <Response>(
         }
       );
     } else if (res.status === AUTHENTICATION_ERROR_STATUS) {
-      if (typeof window !== "undefined") {
+      if (isClient()) {
         if (!clientLogoutRequest) {
           clientLogoutRequest = fetch("api/auth/logout", {
             method: "POST",
@@ -143,11 +116,16 @@ const request = async <Response>(
               ...baseHeaders,
             },
           });
-          await clientLogoutRequest;
-          clientSessionToken.value = "";
-          clientSessionToken.expiresAt = new Date().toISOString();
-          // console.log("đã đăng xuất");
-          location.href = "/login";
+          try {
+            await clientLogoutRequest;
+          } catch (error) {
+            console.log(error);
+          } finally {
+            localStorage.removeItem("sessionToken");
+            localStorage.removeItem("sessionTokenExpiresAt");
+            clientLogoutRequest = null;
+            location.href = "/login";
+          }
         }
       } else {
         const sessionToken = (options?.headers as any)?.Authorization.split(
@@ -160,15 +138,16 @@ const request = async <Response>(
     }
   }
 
-  if (typeof window !== "undefined") {
+  if (isClient()) {
     if (
       ["/auth/login", "/auth/register"].some((item) => item === normalize(url))
     ) {
-      clientSessionToken.value = (payload as LoginResType).data.token;
-      clientSessionToken.expiresAt = (payload as LoginResType).data.expiresAt;
+      const { token, expiresAt } = (payload as LoginResType).data;
+      localStorage.setItem("sessionToken", token);
+      localStorage.setItem("sessionTokenExpiresAt", expiresAt);
     } else if ("/auth/logout" === normalize(url)) {
-      clientSessionToken.value = "";
-      clientSessionToken.expiresAt = new Date().toISOString();
+      localStorage.removeItem("sessionToken");
+      localStorage.removeItem("sessionTokenExpiresAt");
     }
   }
 

@@ -1,6 +1,5 @@
 "use client";
 
-import { clientSessionToken } from "@/lib/http";
 import { AccountResType } from "@/schemaValidations/account.schema";
 import { FCC } from "@/types/react";
 import { createContext, useContext, useState } from "react";
@@ -13,7 +12,6 @@ interface AppContextType {
 }
 
 interface AppProviderProps {
-  initialSessionToken?: string;
   user: User | null;
 }
 
@@ -31,13 +29,8 @@ export const useAppContext = () => {
 };
 
 const AppProvider: FCC<AppProviderProps> = (props) => {
-  const { children, initialSessionToken = "", user: initialUser } = props;
+  const { children, user: initialUser } = props;
   const [user, setUser] = useState<User | null>(initialUser);
-  useState(() => {
-    if (typeof window !== "undefined") {
-      clientSessionToken.value = initialSessionToken;
-    }
-  });
 
   return (
     <AppContext.Provider value={{ user, setUser }}>

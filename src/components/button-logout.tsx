@@ -25,6 +25,8 @@ const ButtonLogout = () => {
         });
     } finally {
       router.refresh();
+      localStorage.removeItem("sessionToken");
+      localStorage.removeItem("sessionTokenExpiresAt");
     }
   };
 

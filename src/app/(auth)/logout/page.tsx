@@ -1,11 +1,11 @@
 "use client";
 
 import authApiRequest from "@/apiRequest/auth";
-import { clientSessionToken } from "@/lib/http";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect } from "react";
 
-const Logout = () => {
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect } from "react";
+
+const LogoutLogic = () => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -14,7 +14,8 @@ const Logout = () => {
   useEffect(() => {
     const controller = new AbortController();
     const signal = controller.signal;
-    if (sessionToken === clientSessionToken.value) {
+
+    if (sessionToken === localStorage.getItem("sessionToken")) {
       authApiRequest
         .logoutFormNextClientToNextServer(true, signal)
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -30,4 +31,11 @@ const Logout = () => {
   return <div>pages</div>;
 };
 
-export default Logout;
+export default function LogoutPage() {
+  return (
+    // You could have a loading skeleton as the `fallback` too
+    <Suspense>
+      <LogoutLogic />
+    </Suspense>
+  );
+}

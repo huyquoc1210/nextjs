@@ -16,6 +16,9 @@ const Header = (props: HeaderProps) => {
         <li>
           <Link href={"/products"}>Sản phẩm</Link>
         </li>
+        <li>
+          <ButtonLogout />
+        </li>
 
         {user ? (
           <>
